@@ -7,7 +7,7 @@ import datetime
 import tempfile
 import numpy as np
 
-TOKEN = '7384849148:AAFwvYuP0aaVD8NRBwxnQ6T8uRYXh5LzJvU'
+TOKEN = '7384849148:AAFwvYuP0aaVD8NRBwxnQ6T8uRYXh5LzJvU' # Your Telegram Token
 
 
 
@@ -73,11 +73,11 @@ def generate_advanced_signal(prices):
     sell_signals = (df['SMA40'] < df['SMA100']) & (df['RSI'] > 70) & (df['MACD'] < df['Signal'])
 
     if buy_signals.iloc[-1]:
-        return 'Al'
+        return 'Buy'
     elif sell_signals.iloc[-1]:
-        return 'Sat'
+        return 'Sell'
     else:
-        return 'Bekle'
+        return 'Wait'
 
 def plot_crypto_graph(prices, crypto_id):
     dates = [datetime.datetime.fromtimestamp(price[0] / 1000) for price in prices]
@@ -85,9 +85,9 @@ def plot_crypto_graph(prices, crypto_id):
 
     plt.figure(figsize=(10, 5))
     plt.plot(dates, values)
-    plt.title(f'{crypto_id.capitalize()} Fiyat Grafiği (Son 30 Gün)')
-    plt.xlabel('Tarih')
-    plt.ylabel('Fiyat (USD)')
+    plt.title(f'{crypto_id.capitalize()} Price Chart (Last 30 Days)')
+    plt.xlabel('Date')
+    plt.ylabel('Price (USD)')
     plt.grid(True)
     
     # Geçici bir dosya oluşturma
@@ -124,20 +124,20 @@ def get_filtered_crypto_list(min_market_cap=1000000):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('Merhaba! Kripto sinyal botuna hoş geldiniz.')
+    await update.message.reply_text('Hello! Welcome to the crypto signal bot.')
 
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     crypto_id = context.args[0] if context.args else 'bitcoin'
     try:
         prices = get_crypto_graph(crypto_id)
         signal = generate_advanced_signal(prices)
-        await update.message.reply_text(f"{crypto_id.capitalize()} için sinyal: {signal}")
+        await update.message.reply_text(f"{crypto_id.capitalize()}  signal: {signal}")
     except (IndexError, ValueError):
-        await update.message.reply_text("Geçersiz kripto para birimi ID'si.")
+        await update.message.reply_text("Invalid cryptocurrency ID.")
 
 async def coins(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     crypto_list = get_filtered_crypto_list()
-    await update.message.reply_text("Mevcut kripto paralar:\n" + "\n".join(crypto_list[:50]))
+    await update.message.reply_text("Available cryptocurrencies:\n" + "\n".join(crypto_list[:50]))
 
 async def graphic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     crypto_id = context.args[0] if context.args else 'bitcoin'
@@ -146,15 +146,15 @@ async def graphic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         filepath = plot_crypto_graph(prices, crypto_id)
         await update.message.reply_photo(photo=open(filepath, 'rb'))
     except (IndexError, ValueError):
-        await update.message.reply_text("Geçersiz kripto para birimi ID'si.")
+        await update.message.reply_text("Invalid cryptocurrency ID.")
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     crypto_id = context.args[0] if context.args else 'bitcoin'
     try:
         price = get_crypto_price(crypto_id)
-        await update.message.reply_text(f"{crypto_id.capitalize()} güncel fiyatı: ${price}")
+        await update.message.reply_text(f"{crypto_id.capitalize()} current price: ${price}")
     except (IndexError, ValueError):
-        await update.message.reply_text("Geçersiz kripto para birimi ID'si.")
+        await update.message.reply_text("Invalid cryptocurrency ID.")
 
 def main():
     application = ApplicationBuilder().token(TOKEN).build()
